@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>تعلم الإنجليزي</title>
+<style>
+  :root {
+    --bg: #fff8e7; --card: #ffffff; --text: #2b2b2b; --muted: #6b6b6b;
+    --primary: #ff7a59; --accent: #4bb8ff; --ok: #3cb371; --bad: #e25555;
+    --shadow: 0 4px 12px rgba(0,0,0,.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #1d1b26; --card: #2a2836; --text: #f2f2f2; --muted: #b5b5c3; --shadow: 0 4px 12px rgba(0,0,0,.4); }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  }
+  header { text-align: center; padding: 20px 16px 8px; }
+  header h1 { margin: 0; font-size: 2rem; color: var(--primary); }
+  header p { margin: 6px 0 0; color: var(--muted); }
+  nav {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+    padding: 12px 16px;
+  }
+  nav button {
+    border: none; border-radius: 999px; padding: 10px 18px; font-size: 1rem;
+    background: var(--card); color: var(--text); box-shadow: var(--shadow); cursor: pointer;
+  }
+  nav button.active { background: var(--primary); color: #fff; }
+  main { max-width: 1000px; margin: 0 auto; padding: 8px 16px 40px; }
+  .grid {
+    display: grid; gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+  .card {
+    background: var(--card); border-radius: 18px; box-shadow: var(--shadow);
+    padding: 14px 8px; text-align: center; cursor: pointer; border: none;
+    color: var(--text); font: inherit; transition: transform .15s;
+  }
+  .card:hover, .card:focus-visible { transform: scale(1.05); outline: 3px solid var(--accent); }
+  .card .big { font-size: 3rem; line-height: 1.1; }
+  .card .en { font-size: 1.3rem; font-weight: bold; margin-top: 6px; direction: ltr; }
+  .card .ar { color: var(--muted); margin-top: 2px; }
+  .swatch { width: 64px; height: 64px; border-radius: 50%; margin: 0 auto; border: 3px solid rgba(0,0,0,.1); }
+  .hint { text-align: center; color: var(--muted); margin: 0 0 14px; }
+  .quiz { text-align: center; }
+  .quiz .question { font-size: 1.4rem; margin: 12px 0; }
+  .quiz .options { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 480px; margin: 0 auto; }
+  .quiz .card.correct { outline: 4px solid var(--ok); }
+  .quiz .card.wrong { outline: 4px solid var(--bad); }
+  .score { font-size: 1.2rem; margin: 10px 0; }
+  .feedback { min-height: 1.6em; font-size: 1.3rem; font-weight: bold; }
+  .btn {
+    border: none; border-radius: 999px; padding: 12px 24px; font-size: 1.1rem;
+    background: var(--accent); color: #fff; cursor: pointer; margin: 8px 4px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>🎈 تعلم الإنجليزي</h1>
+  <p>اضغط على أي بطاقة لتسمع النطق بالإنجليزي 🔊</p>
+</header>
+<nav id="tabs"></nav>
+<main id="content"></main>
+
+<script>
+const DATA = {
+  letters: { title: "🔤 الحروف", items: "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((l, i) => {
+    const words = ["Apple🍎","Ball⚽","Cat🐱","Dog🐶","Egg🥚","Fish🐟","Grapes🍇","Hat🎩","Ice cream🍦","Juice🧃","Kite🪁","Lion🦁","Moon🌙","Nose👃","Orange🍊","Pen🖊️","Queen👑","Rabbit🐰","Sun☀️","Tree🌳","Umbrella☂️","Van🚐","Watch⌚","Xylophone🎼","Yo-yo🪀","Zebra🦓"];
+    const w = words[i], emoji = w.match(/\p{Extended_Pictographic}.*$/u)[0], word = w.replace(emoji, "");
+    return { big: l + l.toLowerCase(), en: `${word} ${emoji}`, ar: "", say: `${l}. ${l} for ${word}` };
+  })},
+  numbers: { title: "🔢 الأرقام", items: [
+    ["One","واحد"],["Two","اثنان"],["Three","ثلاثة"],["Four","أربعة"],["Five","خمسة"],
+    ["Six","ستة"],["Seven","سبعة"],["Eight","ثمانية"],["Nine","تسعة"],["Ten","عشرة"]
+  ].map(([en, ar], i) => ({ big: String(i + 1), en, ar, say: en })) },
+  colors: { title: "🎨 الألوان", items: [
+    ["Red","أحمر","#e53935"],["Blue","أزرق","#1e88e5"],["Green","أخضر","#43a047"],["Yellow","أصفر","#fdd835"],
+    ["Orange","برتقالي","#fb8c00"],["Purple","بنفسجي","#8e24aa"],["Pink","وردي","#f06292"],["Brown","بني","#6d4c41"],
+    ["Black","أسود","#212121"],["White","أبيض","#ffffff"]
+  ].map(([en, ar, c]) => ({ color: c, en, ar, say: en })) },
+  animals: { title: "🐾 الحيوانات", items: [
+    ["🐱","Cat","قطة"],["🐶","Dog","كلب"],["🐮","Cow","بقرة"],["🐴","Horse","حصان"],["🐑","Sheep","خروف"],
+    ["🦁","Lion","أسد"],["🐘","Elephant","فيل"],["🐒","Monkey","قرد"],["🐦","Bird","عصفور"],["🐟","Fish","سمكة"],
+    ["🐫","Camel","جمل"],["🐰","Rabbit","أرنب"]
+  ].map(([big, en, ar]) => ({ big, en, ar, say: en })) },
+  fruits: { title: "🍎 الفواكه", items: [
+    ["🍎","Apple","تفاحة"],["🍌","Banana","موزة"],["🍊","Orange","برتقالة"],["🍇","Grapes","عنب"],["🍓","Strawberry","فراولة"],
+    ["🍉","Watermelon","بطيخ"],["🍋","Lemon","ليمون"],["🍑","Peach","خوخ"],["🍍","Pineapple","أناناس"],["🥭","Mango","مانجو"]
+  ].map(([big, en, ar]) => ({ big, en, ar, say: en })) },
+  family: { title: "👨‍👩‍👧 العائلة", items: [
+    ["👨","Father","أب"],["👩","Mother","أم"],["👦","Brother","أخ"],["👧","Sister","أخت"],
+    ["👴","Grandfather","جد"],["👵","Grandmother","جدة"],["👶","Baby","طفل رضيع"]
+  ].map(([big, en, ar]) => ({ big, en, ar, say: en })) },
+  greetings: { title: "👋 التحيات", items: [
+    ["👋","Hello","مرحبا"],["🌅","Good morning","صباح الخير"],["🌙","Good night","تصبح على خير"],
+    ["🙏","Thank you","شكرا"],["😊","Please","من فضلك"],["🤚","Goodbye","مع السلامة"],["❤️","I love you","أحبك"]
+  ].map(([big, en, ar]) => ({ big, en, ar, say: en })) }
+};
+
+const QUIZ_SECTIONS = ["numbers", "colors", "animals", "fruits"];
+const tabs = document.getElementById("tabs");
+const content = document.getElementById("content");
+
+// النطق باستخدام خاصية المتصفح المدمجة
+function speak(text) {
+  if (!("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US";
+  u.rate = 0.8;
+  const voice = speechSynthesis.getVoices().find(v => v.lang.startsWith("en"));
+  if (voice) u.voice = voice;
+  speechSynthesis.speak(u);
+}
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+
+function makeCard(item, showAr = true) {
+  const c = el("button", "card");
+  if (item.color) {
+    const s = el("div", "swatch");
+    s.style.background = item.color;
+    c.append(s);
+  } else {
+    c.append(el("div", "big", item.big));
+  }
+  c.append(el("div", "en", item.en));
+  if (showAr && item.ar) c.append(el("div", "ar", item.ar));
+  return c;
+}
+
+function showSection(key) {
+  content.innerHTML = "";
+  const grid = el("div", "grid");
+  for (const item of DATA[key].items) {
+    const c = makeCard(item);
+    c.addEventListener("click", () => speak(item.say));
+    grid.append(c);
+  }
+  content.append(grid);
+}
+
+let score = 0, total = 0;
+function showQuiz() {
+  content.innerHTML = "";
+  const key = QUIZ_SECTIONS[Math.floor(Math.random() * QUIZ_SECTIONS.length)];
+  const pool = [...DATA[key].items].sort(() => Math.random() - 0.5).slice(0, 4);
+  const answer = pool[Math.floor(Math.random() * pool.length)];
+
+  const box = el("div", "quiz");
+  box.append(el("div", "score", `⭐ النتيجة: ${score} / ${total}`));
+  box.append(el("div", "question", "استمع واختر الصورة الصحيحة 👂"));
+  const replay = el("button", "btn", "🔊 اسمع مرة ثانية");
+  replay.addEventListener("click", () => speak(answer.say));
+  box.append(replay);
+
+  const feedback = el("div", "feedback");
+  const options = el("div", "options");
+  let answered = false;
+  for (const item of pool) {
+    const c = makeCard({ ...item, en: "" }, false);
+    c.addEventListener("click", () => {
+      if (answered) return;
+      answered = true;
+      total++;
+      if (item === answer) {
+        score++;
+        c.classList.add("correct");
+        feedback.textContent = "🎉 أحسنت! Great job!";
+        feedback.style.color = "var(--ok)";
+        speak("Great job!");
+      } else {
+        c.classList.add("wrong");
+        feedback.textContent = `❌ الإجابة الصحيحة: ${answer.en}`;
+        feedback.style.color = "var(--bad)";
+        speak(answer.say);
+      }
+      setTimeout(showQuiz, 1800);
+    });
+    options.append(c);
+  }
+  box.append(options, feedback);
+  content.append(box);
+  setTimeout(() => speak(answer.say), 300);
+}
+
+const SECTIONS = [...Object.keys(DATA).map(k => [k, DATA[k].title]), ["quiz", "🏆 اختبار"]];
+function select(key) {
+  [...tabs.children].forEach(b => b.classList.toggle("active", b.dataset.key === key));
+  key === "quiz" ? showQuiz() : showSection(key);
+}
+for (const [key, title] of SECTIONS) {
+  const b = el("button", null, title);
+  b.dataset.key = key;
+  b.addEventListener("click", () => select(key));
+  tabs.append(b);
+}
+window.speechSynthesis?.getVoices();
+select("letters");
+</script>
+</body>
+</html>
