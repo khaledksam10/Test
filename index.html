@@ -2,112 +2,175 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>تعلم الإنجليزي</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>تعلم الإنجليزي للأطفال</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;700&display=swap">
 <style>
+  /* Layout: centered tab bar over a responsive grid of big tap-friendly cards; one-column quiz */
   :root {
     --bg: #fff8e7; --card: #ffffff; --text: #2b2b2b; --muted: #6b6b6b;
-    --primary: #ff7a59; --accent: #4bb8ff; --ok: #3cb371; --bad: #e25555;
-    --shadow: 0 4px 12px rgba(0,0,0,.08);
+    --primary: #e8613f; --accent: #2f9be0; --on-accent: #ffffff; --ok: #2e9d5e; --bad: #d64545;
+    --ring: rgba(0,0,0,.12); --shadow: 0 4px 12px rgba(0,0,0,.08);
+    --font: "Baloo Bhaijaan 2", "Segoe UI", Tahoma, Arial, sans-serif;
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #1d1b26; --card: #2a2836; --text: #f2f2f2; --muted: #b5b5c3; --shadow: 0 4px 12px rgba(0,0,0,.4); }
+    :root:not([data-theme="light"]) {
+      --bg: #1d1b26; --card: #2a2836; --text: #f2f2f2; --muted: #b5b5c3;
+      --primary: #ff8a6a; --accent: #4bb8ff; --on-accent: #10202c; --ok: #5ed08f; --bad: #ff7b7b;
+      --ring: rgba(255,255,255,.25); --shadow: 0 4px 12px rgba(0,0,0,.4); color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1d1b26; --card: #2a2836; --text: #f2f2f2; --muted: #b5b5c3;
+    --primary: #ff8a6a; --accent: #4bb8ff; --on-accent: #10202c; --ok: #5ed08f; --bad: #ff7b7b;
+    --ring: rgba(255,255,255,.25); --shadow: 0 4px 12px rgba(0,0,0,.4); color-scheme: dark;
   }
   * { box-sizing: border-box; }
-  body {
-    margin: 0; background: var(--bg); color: var(--text);
-    font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); }
+  .app {
+    max-width: 1000px; margin: 0 auto; padding-block: 0 40px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
   }
-  header { text-align: center; padding: 20px 16px 8px; }
-  header h1 { margin: 0; font-size: 2rem; color: var(--primary); }
-  header p { margin: 6px 0 0; color: var(--muted); }
-  nav {
-    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
-    padding: 12px 16px;
-  }
+  header { text-align: center; padding-block: 20px 4px; }
+  header h1 { margin: 0; font-size: 2rem; color: var(--primary); text-wrap: balance; }
+  header p { margin: 4px 0 0; color: var(--muted); font-size: 1.1rem; }
+  nav { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding-block: 12px 16px; }
   nav button {
-    border: none; border-radius: 999px; padding: 10px 18px; font-size: 1rem;
+    border: none; border-radius: 999px; padding: 10px 18px; font: inherit; font-size: 1.05rem;
     background: var(--card); color: var(--text); box-shadow: var(--shadow); cursor: pointer;
   }
-  nav button.active { background: var(--primary); color: #fff; }
-  main { max-width: 1000px; margin: 0 auto; padding: 8px 16px 40px; }
-  .grid {
-    display: grid; gap: 12px;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  }
+  nav button.active { background: var(--primary); color: var(--on-accent); }
+  .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
   .card {
-    background: var(--card); border-radius: 18px; box-shadow: var(--shadow);
-    padding: 14px 8px; text-align: center; cursor: pointer; border: none;
+    background: var(--card); border-radius: 22px; box-shadow: var(--shadow);
+    padding: 16px 8px; text-align: center; cursor: pointer; border: none;
     color: var(--text); font: inherit; transition: transform .15s;
   }
-  .card:hover, .card:focus-visible { transform: scale(1.05); outline: 3px solid var(--accent); }
-  .card .big { font-size: 3rem; line-height: 1.1; }
-  .card .en { font-size: 1.3rem; font-weight: bold; margin-top: 6px; direction: ltr; }
-  .card .ar { color: var(--muted); margin-top: 2px; }
-  .swatch { width: 64px; height: 64px; border-radius: 50%; margin: 0 auto; border: 3px solid rgba(0,0,0,.1); }
-  .hint { text-align: center; color: var(--muted); margin: 0 0 14px; }
-  .quiz { text-align: center; }
-  .quiz .question { font-size: 1.4rem; margin: 12px 0; }
-  .quiz .options { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 480px; margin: 0 auto; }
-  .quiz .card.correct { outline: 4px solid var(--ok); }
-  .quiz .card.wrong { outline: 4px solid var(--bad); }
-  .score { font-size: 1.2rem; margin: 10px 0; }
-  .feedback { min-height: 1.6em; font-size: 1.3rem; font-weight: bold; }
+  .card:hover { transform: scale(1.04); }
+  .card:focus-visible, nav button:focus-visible, .btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .card.playing { transform: scale(1.08); outline: 4px solid var(--accent); }
+  .card .big { font-size: 3.4rem; line-height: 1.15; }
+  .card .big.word { font-size: 2rem; font-weight: bold; color: var(--primary); direction: ltr; }
+  .card .en { font-size: 1.4rem; font-weight: bold; margin-top: 6px; direction: ltr; }
+  .card .ar { color: var(--muted); font-size: 1.05rem; }
+  .swatch { width: 70px; height: 70px; border-radius: 50%; margin: 0 auto; border: 3px solid var(--ring); }
+  .quiz { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+  .stars { font-size: 1.4rem; min-height: 1.6em; }
+  .question { font-size: 1.4rem; }
+  .options { display: grid; gap: 14px; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; max-width: 480px; }
+  .options .card .big { font-size: 4rem; }
+  .card.correct { outline: 5px solid var(--ok); }
+  .card.wrong { outline: 5px solid var(--bad); animation: shake .4s; opacity: .5; }
+  @keyframes shake { 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+  .feedback { min-height: 1.6em; font-size: 1.5rem; font-weight: bold; }
+  .feedback.ok { color: var(--ok); } .feedback.bad { color: var(--bad); }
   .btn {
-    border: none; border-radius: 999px; padding: 12px 24px; font-size: 1.1rem;
-    background: var(--accent); color: #fff; cursor: pointer; margin: 8px 4px;
+    border: none; border-radius: 999px; padding: 12px 26px; font: inherit; font-size: 1.15rem;
+    background: var(--accent); color: var(--on-accent); cursor: pointer;
   }
+  @media (max-width: 600px) {
+    nav { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; padding-inline: 4px; scrollbar-width: none; }
+    nav button { flex: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { .card { transition: none; } .card.wrong { animation: none; } }
 </style>
 </head>
 <body>
-<header>
-  <h1>🎈 تعلم الإنجليزي</h1>
-  <p>اضغط على أي بطاقة لتسمع النطق بالإنجليزي 🔊</p>
-</header>
-<nav id="tabs"></nav>
-<main id="content"></main>
+<div class="app">
+  <header>
+    <h1>🎈 تعلم الإنجليزي</h1>
+    <p>اضغط على البطاقة واسمع الكلمة 🔊</p>
+  </header>
+  <nav id="tabs"></nav>
+  <main id="content"></main>
+</div>
 
+<script src="sounds.js"></script>
 <script>
+// [emoji, English, Arabic]
+const list = rows => rows.map(([big, en, ar]) => ({ big, en, ar, say: en }));
+
+const LETTER_WORDS = [["🍎","Apple"],["⚽","Ball"],["🐱","Cat"],["🐶","Dog"],["🥚","Egg"],["🐟","Fish"],["🍇","Grapes"],["🎩","Hat"],["🍦","Ice cream"],["🧃","Juice"],["🪁","Kite"],["🦁","Lion"],["🌙","Moon"],["👃","Nose"],["🍊","Orange"],["🖊️","Pen"],["👑","Queen"],["🐰","Rabbit"],["☀️","Sun"],["🌳","Tree"],["☂️","Umbrella"],["🚐","Van"],["⌚","Watch"],["🎼","Xylophone"],["🪀","Yo-yo"],["🦓","Zebra"]];
+
 const DATA = {
-  letters: { title: "🔤 الحروف", items: "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((l, i) => {
-    const words = ["Apple🍎","Ball⚽","Cat🐱","Dog🐶","Egg🥚","Fish🐟","Grapes🍇","Hat🎩","Ice cream🍦","Juice🧃","Kite🪁","Lion🦁","Moon🌙","Nose👃","Orange🍊","Pen🖊️","Queen👑","Rabbit🐰","Sun☀️","Tree🌳","Umbrella☂️","Van🚐","Watch⌚","Xylophone🎼","Yo-yo🪀","Zebra🦓"];
-    const w = words[i], emoji = w.match(/\p{Extended_Pictographic}.*$/u)[0], word = w.replace(emoji, "");
-    return { big: l + l.toLowerCase(), en: `${word} ${emoji}`, ar: "", say: `${l}. ${l} for ${word}` };
+  letters: { title: "🔤 الحروف", items: LETTER_WORDS.map(([emoji, word], i) => {
+    const l = String.fromCharCode(65 + i);
+    return { big: l + l.toLowerCase(), word: true, en: `${word} ${emoji}`, say: `${l}. ${l} for ${word}` };
   })},
   numbers: { title: "🔢 الأرقام", items: [
     ["One","واحد"],["Two","اثنان"],["Three","ثلاثة"],["Four","أربعة"],["Five","خمسة"],
     ["Six","ستة"],["Seven","سبعة"],["Eight","ثمانية"],["Nine","تسعة"],["Ten","عشرة"]
-  ].map(([en, ar], i) => ({ big: String(i + 1), en, ar, say: en })) },
+  ].map(([en, ar], i) => ({ big: String(i + 1), word: true, en, ar, say: en })) },
   colors: { title: "🎨 الألوان", items: [
     ["Red","أحمر","#e53935"],["Blue","أزرق","#1e88e5"],["Green","أخضر","#43a047"],["Yellow","أصفر","#fdd835"],
     ["Orange","برتقالي","#fb8c00"],["Purple","بنفسجي","#8e24aa"],["Pink","وردي","#f06292"],["Brown","بني","#6d4c41"],
     ["Black","أسود","#212121"],["White","أبيض","#ffffff"]
-  ].map(([en, ar, c]) => ({ color: c, en, ar, say: en })) },
-  animals: { title: "🐾 الحيوانات", items: [
+  ].map(([en, ar, color]) => ({ color, en, ar, say: en })) },
+  body: { title: "🙂 أعضاء الجسم", items: list([
+    ["🙂","Face","وجه"],["👀","Eyes","عيون"],["👂","Ear","أذن"],["👃","Nose","أنف"],["👄","Mouth","فم"],
+    ["🦷","Teeth","أسنان"],["👅","Tongue","لسان"],["✋","Hand","يد"],["💪","Arm","ذراع"],["🦵","Leg","رجل"],
+    ["🦶","Foot","قدم"],["💇","Hair","شعر"]
+  ])},
+  days: { title: "📅 الأيام", items: [
+    ["Sunday","الأحد"],["Monday","الاثنين"],["Tuesday","الثلاثاء"],["Wednesday","الأربعاء"],
+    ["Thursday","الخميس"],["Friday","الجمعة"],["Saturday","السبت"]
+  ].map(([en, ar]) => ({ big: en.slice(0, 3), word: true, en, ar, say: en })) },
+  months: { title: "🗓️ الشهور", items: [
+    ["January","يناير"],["February","فبراير"],["March","مارس"],["April","أبريل"],["May","مايو"],["June","يونيو"],
+    ["July","يوليو"],["August","أغسطس"],["September","سبتمبر"],["October","أكتوبر"],["November","نوفمبر"],["December","ديسمبر"]
+  ].map(([en, ar], i) => ({ big: String(i + 1), word: true, en, ar, say: en })) },
+  animals: { title: "🐾 الحيوانات", items: list([
     ["🐱","Cat","قطة"],["🐶","Dog","كلب"],["🐮","Cow","بقرة"],["🐴","Horse","حصان"],["🐑","Sheep","خروف"],
     ["🦁","Lion","أسد"],["🐘","Elephant","فيل"],["🐒","Monkey","قرد"],["🐦","Bird","عصفور"],["🐟","Fish","سمكة"],
     ["🐫","Camel","جمل"],["🐰","Rabbit","أرنب"]
-  ].map(([big, en, ar]) => ({ big, en, ar, say: en })) },
-  fruits: { title: "🍎 الفواكه", items: [
+  ])},
+  fruits: { title: "🍎 الفواكه", items: list([
     ["🍎","Apple","تفاحة"],["🍌","Banana","موزة"],["🍊","Orange","برتقالة"],["🍇","Grapes","عنب"],["🍓","Strawberry","فراولة"],
     ["🍉","Watermelon","بطيخ"],["🍋","Lemon","ليمون"],["🍑","Peach","خوخ"],["🍍","Pineapple","أناناس"],["🥭","Mango","مانجو"]
-  ].map(([big, en, ar]) => ({ big, en, ar, say: en })) },
-  family: { title: "👨‍👩‍👧 العائلة", items: [
+  ])},
+  shapes: { title: "🔺 الأشكال", items: list([
+    ["🔵","Circle","دائرة"],["🟥","Square","مربع"],["🔺","Triangle","مثلث"],["⭐","Star","نجمة"],
+    ["❤️","Heart","قلب"],["🔷","Diamond","معين"],["🌙","Moon","هلال"]
+  ])},
+  clothes: { title: "👕 الملابس", items: list([
+    ["👕","Shirt","قميص"],["👖","Pants","بنطلون"],["👗","Dress","فستان"],["👟","Shoes","حذاء"],
+    ["🧦","Socks","جوارب"],["🧢","Cap","طاقية"],["🧥","Coat","معطف"],["🧤","Gloves","قفازات"]
+  ])},
+  family: { title: "👨‍👩‍👧 العائلة", items: list([
     ["👨","Father","أب"],["👩","Mother","أم"],["👦","Brother","أخ"],["👧","Sister","أخت"],
     ["👴","Grandfather","جد"],["👵","Grandmother","جدة"],["👶","Baby","طفل رضيع"]
-  ].map(([big, en, ar]) => ({ big, en, ar, say: en })) },
-  greetings: { title: "👋 التحيات", items: [
+  ])},
+  greetings: { title: "👋 التحيات", items: list([
     ["👋","Hello","مرحبا"],["🌅","Good morning","صباح الخير"],["🌙","Good night","تصبح على خير"],
     ["🙏","Thank you","شكرا"],["😊","Please","من فضلك"],["🤚","Goodbye","مع السلامة"],["❤️","I love you","أحبك"]
-  ].map(([big, en, ar]) => ({ big, en, ar, say: en })) }
+  ])}
 };
 
-const QUIZ_SECTIONS = ["numbers", "colors", "animals", "fruits"];
+// Sections whose cards are recognisable from the picture alone.
+const QUIZ_SECTIONS = ["colors", "body", "animals", "fruits", "shapes", "clothes"];
+const PRAISE = ["Great job!", "Well done!", "Excellent!", "You are a star!"];
+const TRY_AGAIN = "Try again!";
+
 const tabs = document.getElementById("tabs");
 const content = document.getElementById("content");
 
-// النطق باستخدام خاصية المتصفح المدمجة
+// Prefer the pre-recorded clips in sounds.js; fall back to the browser voice.
+const player = new Audio();
 function speak(text) {
+  const clip = window.SOUNDS && window.SOUNDS[text];
+  if (clip) {
+    window.speechSynthesis?.cancel();
+    player.pause();
+    player.src = clip;
+    player.currentTime = 0;
+    player.play().catch(() => speakWithVoice(text));
+  } else {
+    speakWithVoice(text);
+  }
+}
+function speakWithVoice(text) {
   if (!("speechSynthesis" in window)) return;
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
@@ -125,18 +188,26 @@ function el(tag, cls, text) {
   return e;
 }
 
-function makeCard(item, showAr = true) {
+function makeCard(item, withLabels = true) {
   const c = el("button", "card");
   if (item.color) {
     const s = el("div", "swatch");
     s.style.background = item.color;
     c.append(s);
   } else {
-    c.append(el("div", "big", item.big));
+    c.append(el("div", item.word ? "big word" : "big", item.big));
   }
-  c.append(el("div", "en", item.en));
-  if (showAr && item.ar) c.append(el("div", "ar", item.ar));
+  if (withLabels) {
+    c.append(el("div", "en", item.en));
+    if (item.ar) c.append(el("div", "ar", item.ar));
+  }
   return c;
+}
+
+function flash(card) {
+  document.querySelectorAll(".card.playing").forEach(c => c.classList.remove("playing"));
+  card.classList.add("playing");
+  setTimeout(() => card.classList.remove("playing"), 600);
 }
 
 function showSection(key) {
@@ -144,13 +215,13 @@ function showSection(key) {
   const grid = el("div", "grid");
   for (const item of DATA[key].items) {
     const c = makeCard(item);
-    c.addEventListener("click", () => speak(item.say));
+    c.addEventListener("click", () => { speak(item.say); flash(c); });
     grid.append(c);
   }
   content.append(grid);
 }
 
-let score = 0, total = 0;
+let stars = 0;
 function showQuiz() {
   content.innerHTML = "";
   const key = QUIZ_SECTIONS[Math.floor(Math.random() * QUIZ_SECTIONS.length)];
@@ -158,40 +229,41 @@ function showQuiz() {
   const answer = pool[Math.floor(Math.random() * pool.length)];
 
   const box = el("div", "quiz");
-  box.append(el("div", "score", `⭐ النتيجة: ${score} / ${total}`));
-  box.append(el("div", "question", "استمع واختر الصورة الصحيحة 👂"));
-  const replay = el("button", "btn", "🔊 اسمع مرة ثانية");
+  const starRow = el("div", "stars", stars ? "⭐".repeat(Math.min(stars, 10)) + (stars > 10 ? ` ×${stars}` : "") : "اجمع النجوم ⭐");
+  const replay = el("button", "btn", "🔊 اسمع الكلمة");
   replay.addEventListener("click", () => speak(answer.say));
-  box.append(replay);
-
   const feedback = el("div", "feedback");
   const options = el("div", "options");
-  let answered = false;
+  let done = false;
+
   for (const item of pool) {
-    const c = makeCard({ ...item, en: "" }, false);
+    const c = makeCard(item, false);
     c.addEventListener("click", () => {
-      if (answered) return;
-      answered = true;
-      total++;
+      if (done || c.classList.contains("wrong")) return;
       if (item === answer) {
-        score++;
+        done = true;
+        stars++;
         c.classList.add("correct");
-        feedback.textContent = "🎉 أحسنت! Great job!";
-        feedback.style.color = "var(--ok)";
-        speak("Great job!");
+        c.append(el("div", "en", answer.en));
+        feedback.className = "feedback ok";
+        feedback.textContent = "🎉 أحسنت!";
+        starRow.textContent = "⭐".repeat(Math.min(stars, 10)) + (stars > 10 ? ` ×${stars}` : "");
+        speak(PRAISE[Math.floor(Math.random() * PRAISE.length)]);
+        setTimeout(() => showQuiz(), 2000);
       } else {
+        // Let the child try again instead of revealing the answer.
         c.classList.add("wrong");
-        feedback.textContent = `❌ الإجابة الصحيحة: ${answer.en}`;
-        feedback.style.color = "var(--bad)";
-        speak(answer.say);
+        feedback.className = "feedback bad";
+        feedback.textContent = "حاول مرة ثانية 💪";
+        speak(TRY_AGAIN);
+        setTimeout(() => speak(answer.say), 1100);
       }
-      setTimeout(showQuiz, 1800);
     });
     options.append(c);
   }
-  box.append(options, feedback);
+  box.append(starRow, el("div", "question", "اسمع واختر الصورة الصحيحة 👂"), replay, options, feedback);
   content.append(box);
-  setTimeout(() => speak(answer.say), 300);
+  speak(answer.say);
 }
 
 const SECTIONS = [...Object.keys(DATA).map(k => [k, DATA[k].title]), ["quiz", "🏆 اختبار"]];
